@@ -72,7 +72,8 @@ func setUpAdminRoutes(router *gin.Engine) {
 		authorizedGroup.Use(middlewares.AdminRequired)
 		{
 			authorizedGroup.POST("/logout", handlers.Logout)
-			authorizedGroup.POST("/category", handlers.AddCategory)
+			authorizedGroup.POST("/categories", handlers.AddCategory)
+			authorizedGroup.GET("/categories", handlers.ListCategories)
 		}
 	}
 }
