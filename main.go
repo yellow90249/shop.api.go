@@ -72,8 +72,13 @@ func setUpAdminRoutes(router *gin.Engine) {
 		authorizedGroup.Use(middlewares.AdminRequired)
 		{
 			authorizedGroup.POST("/logout", handlers.Logout)
+
+			// 種類
 			authorizedGroup.POST("/categories", handlers.AddCategory)
 			authorizedGroup.GET("/categories", handlers.ListCategories)
+			authorizedGroup.DELETE("/categories/:categoryId", handlers.DeleteCategory)
+
+			// 商品
 		}
 	}
 }
