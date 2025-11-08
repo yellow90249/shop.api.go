@@ -55,9 +55,9 @@ type Product struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 
-	CartItems  []CartItem
-	OrderItems []OrderItem
-	Comments   []Comment
+	CartItems  []CartItem  `json:"-"`
+	OrderItems []OrderItem `json:"-"`
+	Comments   []Comment   `json:"-"`
 }
 
 type Cart struct {

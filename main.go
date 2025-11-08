@@ -30,11 +30,16 @@ func main() {
 	router.Use(sessions.Sessions("user_session", store))
 
 	// 路由設定
+	setUpPublicRoutes(router)
 	setUpWebRoutes(router)
 	setUpAdminRoutes(router)
 
 	// 啟動服務
 	router.Run(":7777")
+}
+
+func setUpPublicRoutes(router *gin.Engine) {
+	router.Static("/uploads", "./uploads")
 }
 
 func setUpWebRoutes(router *gin.Engine) {
@@ -80,7 +85,7 @@ func setUpAdminRoutes(router *gin.Engine) {
 
 			// 商品
 			authorizedGroup.POST("/products", handlers.AddProduct)
+			authorizedGroup.GET("/products", handlers.ListProducts)
 		}
 	}
 }
-
