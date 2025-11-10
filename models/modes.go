@@ -29,9 +29,9 @@ type User struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 
-	Carts    []Cart    `json:"-"`
-	Orders   []Order   `json:"-"`
-	Comments []Comment `json:"-"`
+	CartItems []CartItem `json:"-"`
+	Orders    []Order    `json:"-"`
+	Comments  []Comment  `json:"-"`
 }
 
 type Category struct {
@@ -61,18 +61,9 @@ type Product struct {
 	Comments   []Comment   `json:"-"`
 }
 
-type Cart struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    uint
-	CreatedAt time.Time
-	UpdatedAt time.Time
-
-	CartItems []CartItem
-}
-
 type CartItem struct {
 	ID        uint `gorm:"primaryKey"`
-	CartID    uint
+	UserID    uint
 	ProductID uint
 	Quantity  uint
 	UnitPrice float64

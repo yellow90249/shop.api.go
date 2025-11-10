@@ -17,6 +17,7 @@ func main() {
 	// 初始化設定
 	config.LoadEnvFile()
 	config.ConnectDB()
+	config.Migrate()
 
 	// 創建 Gin 路由器
 	router := gin.Default()
