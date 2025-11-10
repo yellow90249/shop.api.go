@@ -74,6 +74,31 @@ func AddProduct(ctx *gin.Context) {
 }
 
 func UpdateProduct(ctx *gin.Context) {
+	// 找商品
+	productId := ctx.Param("productId")
+	product := models.Product{}
+	err := config.DB.First(&product, productId).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	req := AddProductRequest{}
+	err = ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	product.Name = req.Name
+	product.CategoryID = req.CategoryID
+	product.Price = req.Price
+	product.StockQuantity = req.StockQuantity
+	product.Description = req.Description
+
+	config.DB.Save(&product)
+
+	ctx.JSON(http.StatusOK, "更新成功")
 }
 
 func UpdateProductImage(ctx *gin.Context) {
