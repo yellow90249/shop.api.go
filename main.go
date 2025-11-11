@@ -44,6 +44,7 @@ func setUpPublicRoutes(router *gin.Engine) {
 func setUpWebRoutes(router *gin.Engine) {
 	router.GET("/categories", handlers.ListCategories)
 	router.GET("/products", handlers.ListProducts)
+	router.GET("/products/:productId", handlers.GetProduct)
 }
 
 func setUpAdminRoutes(router *gin.Engine) {

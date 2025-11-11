@@ -191,6 +191,18 @@ func ListProducts(ctx *gin.Context) {
 	})
 }
 
+func GetProduct(ctx *gin.Context) {
+	productId := ctx.Param("productId")
+	product := models.Product{}
+	err := config.DB.First(&product, productId).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, product)
+}
+
 func DeleteProduct(ctx *gin.Context) {
 	productId := ctx.Param("productId")
 
