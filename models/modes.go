@@ -29,7 +29,7 @@ type User struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 
-	CartItems []CartItem `json:"-"`
+	CartItems []CartItem 
 	Orders    []Order    `json:"-"`
 	Comments  []Comment  `json:"-"`
 }

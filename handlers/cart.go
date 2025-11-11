@@ -26,5 +26,25 @@ func AddCartItem(ctx *gin.Context) {
 		return
 	}
 
+	// 從 body 拿資料
+	req := AddCartItemRequest{}
+	err = ctx.ShouldBindBodyWithJSON(&req)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 存記錄到 CartItem table
+	cartItem := models.CartItem{
+		UserID:    user.ID,
+		ProductID: req.ProductID,
+		Quantity:  req.Quantity,
+		UnitPrice: req.UnitPrice,
+	}
+	err = config.DB.Create(&cartItem).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+	}
+
 	ctx.JSON(http.StatusOK, userID)
 }

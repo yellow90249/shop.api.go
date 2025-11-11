@@ -49,6 +49,7 @@ func setUpWebRoutes(router *gin.Engine) {
 	router.GET("/products/:productId", handlers.GetProduct)
 
 	// 需要 Customer 登入
+	router.GET("/me", middlewares.CustomerRequired, handlers.GetUser)
 	router.POST("/cart/items", middlewares.CustomerRequired, handlers.AddCartItem)
 }
 

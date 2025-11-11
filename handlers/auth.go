@@ -144,6 +144,19 @@ func AdminLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
+func GetUser(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	userID := session.Get("user_id")
+	user := models.User{}
+	err := config.DB.Preload("CartItems").First(&user, userID).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
 func Logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Options(sessions.Options{MaxAge: -1})
