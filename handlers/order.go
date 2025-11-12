@@ -131,6 +131,9 @@ func ListOrdersByCustomer(ctx *gin.Context) {
 	// 計算總數
 	db.Count(&total)
 
+	// 加入排序
+	db = db.Order("created_at DESC")
+
 	// 只有當 CurrentPage 和 PerPage 都是 -1 時才返回全部，否則必須分頁
 	if query.CurrentPage == -1 && query.PerPage == -1 {
 		// 返回全部資料
@@ -163,6 +166,9 @@ func ListOrdersByAdmin(ctx *gin.Context) {
 
 	// 計算總數
 	db.Count(&total)
+
+	// 加入排序
+	db = db.Order("created_at DESC")
 
 	// 只有當 CurrentPage 和 PerPage 都是 -1 時才返回全部，否則必須分頁
 	if query.CurrentPage == -1 && query.PerPage == -1 {

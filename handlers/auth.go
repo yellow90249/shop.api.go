@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 	"shop.go/config"
 	"shop.go/models"
 )
@@ -148,7 +149,11 @@ func GetUser(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	userID := session.Get("user_id")
 	user := models.User{}
-	err := config.DB.Preload("CartItems.Product").First(&user, userID).Error
+	err := config.DB.
+		Preload("CartItems", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at ASC")
+		}).
+		Preload("CartItems.Product").First(&user, userID).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
