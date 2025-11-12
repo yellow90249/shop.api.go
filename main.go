@@ -54,7 +54,9 @@ func setUpWebRoutes(router *gin.Engine) {
 	router.GET("/me", middlewares.CustomerRequired, handlers.GetUser)
 	router.POST("/logout", middlewares.CustomerRequired, handlers.Logout)
 	router.POST("/cart/items", middlewares.CustomerRequired, handlers.AddCartItem)
+	router.PUT("/cart/items/:cartItemId", middlewares.CustomerRequired, handlers.UpdateCartItemQuantity)
 	router.DELETE("/cart/items/:cartItemId", middlewares.CustomerRequired, handlers.DeleteCartItem)
+	router.POST("/order", middlewares.CustomerRequired, handlers.CreateOrder)
 }
 
 func setUpAdminRoutes(router *gin.Engine) {

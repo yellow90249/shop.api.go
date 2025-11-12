@@ -15,6 +15,10 @@ type AddCartItemRequest struct {
 	UnitPrice float64
 }
 
+type UpdateCartItemRequest struct {
+	Quantity uint
+}
+
 func AddCartItem(ctx *gin.Context) {
 	// 找 user
 	session := sessions.Default(ctx)
@@ -47,6 +51,29 @@ func AddCartItem(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, userID)
+}
+
+func UpdateCartItemQuantity(ctx *gin.Context) {
+	// Get Data
+	cartId := ctx.Param("cartItemId")
+	req := UpdateCartItemRequest{}
+	err := ctx.ShouldBindBodyWithJSON(&req)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 更新
+	cart := models.CartItem{}
+	err = config.DB.First(&cart, cartId).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	cart.Quantity = req.Quantity
+	config.DB.Save(&cart)
+
+	ctx.JSON(http.StatusOK, "更新成功")
 }
 
 func DeleteCartItem(ctx *gin.Context) {
