@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"shop.go/config"
 	"shop.go/models"
@@ -33,18 +33,27 @@ func CreateOrder(ctx *gin.Context) {
 	tx := config.DB.Begin()
 
 	// 建立訂單
-	session := sessions.Default(ctx)
-	userID := session.Get("user_id").(uint)
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, "userID not exist")
+		return
+	}
 
 	req := CreateOrderRequest{}
 	err := ctx.ShouldBindBodyWithJSON(&req)
 	if err != nil {
-		ctx.String(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	newVal, err := strconv.ParseUint(userID.(string), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	order := models.Order{
-		UserID:           userID,
+		UserID:           uint(newVal),
 		RecipientName:    req.RecipientName,
 		RecipientPhone:   req.RecipientPhone,
 		RecipientEmail:   req.RecipientEmail,
@@ -112,8 +121,11 @@ func ListOrdersByCustomer(ctx *gin.Context) {
 	var orders []models.Order
 	var total int64
 	var query ListOrdersQuery
-	session := sessions.Default(ctx)
-	userID := session.Get("user_id").(uint)
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, "userID not exist")
+		return
+	}
 
 	// 自動綁定和驗證
 	if err := ctx.ShouldBindQuery(&query); err != nil {

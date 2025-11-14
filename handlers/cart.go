@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"shop.go/config"
 	"shop.go/models"
@@ -21,8 +20,11 @@ type UpdateCartItemRequest struct {
 
 func AddCartItem(ctx *gin.Context) {
 	// 找 user
-	session := sessions.Default(ctx)
-	userID := session.Get("user_id")
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, "userID not exist")
+		return
+	}
 	user := models.User{}
 	err := config.DB.First(&user, userID).Error
 	if err != nil {
@@ -89,8 +91,11 @@ func DeleteCartItem(ctx *gin.Context) {
 }
 
 func DeleteAllCartItem(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	userID := session.Get("user_id")
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, "userID not exist")
+		return
+	}
 	err := config.DB.Where("user_id = ?", userID).Delete(&models.CartItem{}).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())

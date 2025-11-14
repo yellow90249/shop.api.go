@@ -4,13 +4,15 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"slices"
+	"strconv"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"shop.go/config"
 	"shop.go/models"
+	"shop.go/utils"
 )
 
 type SignupRequest struct {
@@ -68,86 +70,56 @@ func Signup(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, "cool")
 }
 
-func Login(ctx *gin.Context) {
-	// 從 Request Body 拿資料
-	req := LoginRequest{}
-	err := ctx.ShouldBindBodyWithJSON(&req)
-	if err != nil {
-		ctx.String(http.StatusOK, err.Error())
-		return
+func Login(userRoleList []string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// 從 Request Body 拿資料
+		req := LoginRequest{}
+		err := ctx.ShouldBindBodyWithJSON(&req)
+		if err != nil {
+			ctx.String(http.StatusOK, err.Error())
+			return
+		}
+
+		// 查詢 user
+		user := models.User{Email: req.Email}
+		err = config.DB.Where("email = ?", user.Email).First(&user).Error
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		// 檢查身份（得是 userRoleList 裡的身份才能登入）
+		if !slices.Contains(userRoleList, user.Role) {
+			ctx.JSON(http.StatusUnauthorized, "role invalid")
+			return
+		}
+
+		// 驗證密碼
+		if !user.CheckPassword(req.Password) {
+			ctx.JSON(http.StatusUnauthorized, "password not correct")
+			return
+		}
+
+		// 產生 token
+		userId := strconv.FormatUint(uint64(user.ID), 10)
+		token, err := utils.GenerateToken(userId, user.Role, user.Name)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		// 返回成功 Response
+		ctx.JSON(http.StatusOK, token)
 	}
-
-	// 查詢 user
-	user := models.User{Email: req.Email, Password: req.Password}
-	err = config.DB.Where("email = ?", user.Email).First(&user).Error
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	// 驗證密碼
-	if !user.CheckPassword(req.Password) {
-		ctx.JSON(http.StatusUnauthorized, "password not correct")
-		return
-	}
-
-	// 設置 session
-	session := sessions.Default(ctx)
-	session.Set("user_id", user.ID)
-	session.Set("user_name", user.Name)
-	session.Set("user_role", user.Role)
-	session.Save()
-
-	// 返回成功 Response
-	ctx.JSON(http.StatusOK, user)
-}
-
-func AdminLogin(ctx *gin.Context) {
-	// 從 Request Body 拿資料
-	req := LoginRequest{}
-	err := ctx.ShouldBindBodyWithJSON(&req)
-	if err != nil {
-		ctx.String(http.StatusOK, err.Error())
-		return
-	}
-
-	// 查詢 user
-	user := models.User{Email: req.Email}
-	err = config.DB.Where("email = ?", user.Email).First(&user).Error
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	// 檢查身份
-	if user.Role != "admin" && user.Role != "staff" {
-		ctx.JSON(http.StatusUnauthorized, "此帳號無權限")
-		return
-	}
-
-	// 驗證密碼
-	if !user.CheckPassword(req.Password) {
-		ctx.JSON(http.StatusUnauthorized, "password not correct")
-		return
-	}
-
-	// 設置 session
-	session := sessions.Default(ctx)
-	session.Set("user_id", user.ID)
-	session.Set("user_name", user.Name)
-	session.Set("user_role", user.Role)
-	err = session.Save()
-	if err != nil {
-		log.Println(err)
-	}
-
-	// 返回成功 Response
-	ctx.JSON(http.StatusOK, user)
 }
 
 func GetUser(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	userID := session.Get("user_id")
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		ctx.JSON(http.StatusBadRequest, "userID not exist")
+		return
+	}
+
 	user := models.User{}
 	err := config.DB.
 		Preload("CartItems", func(db *gorm.DB) *gorm.DB {
@@ -160,11 +132,4 @@ func GetUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, user)
-}
-
-func Logout(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	session.Options(sessions.Options{MaxAge: -1})
-	session.Save()
-	ctx.JSON(http.StatusOK, "登出成功")
 }
