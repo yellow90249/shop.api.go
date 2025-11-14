@@ -2,9 +2,7 @@ package main
 
 import (
 	"os"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"shop.go/config"
 	"shop.go/handlers"
