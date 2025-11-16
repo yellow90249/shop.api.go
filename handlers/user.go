@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"shop.go/config"
 	"shop.go/models"
 )
@@ -59,4 +63,43 @@ func ListUsers(ctx *gin.Context) {
 		List:  users,
 		Total: total,
 	})
+}
+
+func UpdateUserImage(ctx *gin.Context) {
+	// 找商品
+	userId := ctx.Param("userId")
+	user := models.User{}
+	err := config.DB.First(&user, userId).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// 存 FS
+	file, err := ctx.FormFile("UploadedFile")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	filename := uuid.New().String() + ext
+	dst := filepath.Join("uploads", filename)
+	err = ctx.SaveUploadedFile(file, dst)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "儲存失敗")
+		return
+	}
+
+	err = os.Remove(user.AvatarURL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, "刪除失敗")
+		return
+	}
+
+	// 存 DB
+	user.AvatarURL = dst
+	config.DB.Save(&user)
+
+	ctx.JSON(http.StatusOK, "使用者圖片更新成功")
 }

@@ -97,5 +97,6 @@ func setUpAdminRoutes(router *gin.Engine) {
 
 		// 用戶
 			adminGroup.GET("/users", middlewares.AuthRequire("admin"), handlers.ListUsers)
+			adminGroup.PUT("/users/:userId/image", middlewares.AuthRequire("admin"), handlers.UpdateUserImage)
 	}
 }
