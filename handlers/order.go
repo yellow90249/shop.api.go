@@ -29,6 +29,10 @@ type ListOrdersResponse struct {
 	Total   int64
 }
 
+type UpdateOrderRequest struct {
+	Status string `binding:"required"`
+}
+
 func CreateOrder(ctx *gin.Context) {
 	tx := config.DB.Begin()
 
@@ -198,4 +202,28 @@ func ListOrdersByAdmin(ctx *gin.Context) {
 		List:  orders,
 		Total: total,
 	})
+}
+
+func UpdateOrder(ctx *gin.Context) {
+	// 找商品
+	orderId := ctx.Param("orderId")
+	order := models.Order{}
+	err := config.DB.First(&order, orderId).Error
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	req := UpdateOrderRequest{}
+	err = ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	order.Status = models.OrderStatus(req.Status)
+
+	config.DB.Save(&order)
+
+	ctx.JSON(http.StatusOK, "更新成功")
 }

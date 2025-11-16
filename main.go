@@ -96,7 +96,11 @@ func setUpAdminRoutes(router *gin.Engine) {
 		adminGroup.DELETE("/products/:productId", middlewares.AuthRequire("admin"), handlers.DeleteProduct)
 
 		// 用戶
-			adminGroup.GET("/users", middlewares.AuthRequire("admin"), handlers.ListUsers)
-			adminGroup.PUT("/users/:userId/image", middlewares.AuthRequire("admin"), handlers.UpdateUserImage)
+		adminGroup.GET("/users", middlewares.AuthRequire("admin"), handlers.ListUsers)
+		adminGroup.PUT("/users/:userId/image", middlewares.AuthRequire("admin"), handlers.UpdateUserImage)
+
+		// 訂單
+		adminGroup.GET("/orders", middlewares.AuthRequire("admin"), handlers.ListOrdersByAdmin)
+		adminGroup.PUT("/orders/:orderId", middlewares.AuthRequire("admin"), handlers.UpdateOrder)
 	}
 }
