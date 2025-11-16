@@ -25,7 +25,7 @@ type User struct {
 	Name      string
 	Password  string `json:"-"`
 	AvatarURL string
-	Role      string `json:"-"`
+	Role      string
 	Phone     string `gorm:"unique"`
 	Address   string
 	CreatedAt time.Time
