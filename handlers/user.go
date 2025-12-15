@@ -91,14 +91,14 @@ func UpdateUserImage(ctx *gin.Context) {
 		return
 	}
 
-	err = os.Remove(user.AvatarURL)
+	err = os.Remove(user.Avatar)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, "刪除失敗")
 		return
 	}
 
 	// 存 DB
-	user.AvatarURL = dst
+	user.Avatar = dst
 	config.DB.Save(&user)
 
 	ctx.JSON(http.StatusOK, "使用者圖片更新成功")

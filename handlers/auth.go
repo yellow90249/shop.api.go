@@ -19,6 +19,7 @@ type SignupRequest struct {
 	Name     string `binding:"required"`
 	Email    string `binding:"required"`
 	Password string `binding:"required"`
+	Phone    string `binding:"required"`
 }
 
 type LoginRequest struct {
@@ -28,6 +29,13 @@ type LoginRequest struct {
 
 func Signup(ctx *gin.Context) {
 	req := SignupRequest{}
+	role := ctx.Param("role")
+
+	validRoles := []string{"admin", "guest", "user"}
+	if !slices.Contains(validRoles, role) {
+		ctx.JSON(http.StatusBadRequest, "Role is not valid")
+		return
+	}
 
 	err := ctx.ShouldBind(&req)
 	if err != nil {
@@ -43,22 +51,23 @@ func Signup(ctx *gin.Context) {
 
 	// 儲存檔案
 	ext := filepath.Ext(file.Filename)
-	filename := uuid.New().String() + ext
-	dst := filepath.Join("uploads", filename)
+	file.Filename = uuid.New().String() + ext
+	log.Println(file.Filename)
 
-	err = ctx.SaveUploadedFile(file, dst)
+	err = config.UploadFile(ctx, file)
 	if err != nil {
-		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, "儲存失敗")
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// DB 存紀錄
 	user := models.User{
-		Name:      req.Name,
-		Email:     req.Email,
-		Password:  req.Password,
-		Avatar: dst,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+		Phone:    req.Phone,
+		Role:     role,
+		Avatar:   file.Filename,
 	}
 
 	err = config.DB.Create(&user).Error
@@ -67,7 +76,7 @@ func Signup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "cool")
+	ctx.JSON(http.StatusOK, user)
 }
 
 func Login(userRoleList []string) gin.HandlerFunc {

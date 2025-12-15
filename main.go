@@ -2,9 +2,7 @@ package main
 
 import (
 	"os"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"shop.go/config"
 	"shop.go/handlers"
@@ -17,31 +15,28 @@ func main() {
 	config.LoadEnvFile()
 	config.ConnectDB()
 	config.ConnectStorage()
+	config.Migrate()
 
 	// 創建 Gin 路由器
 	router := gin.Default()
 
 	// 大家都進來吧（開發用）
-	if os.Getenv("GO_ENV") == "development" {
-		router.Use(cors.New(cors.Config{
-			AllowAllOrigins:  true,
-			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-			AllowHeaders:     []string{"*"},
-			ExposeHeaders:    []string{"Content-Length"},
-			AllowCredentials: false,
-			MaxAge:           12 * time.Hour,
-		}))
-	}
+	// if os.Getenv("GO_ENV") == "development" {
+	// 	router.Use(cors.New(cors.Config{
+	// 		AllowAllOrigins:  true,
+	// 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+	// 		AllowHeaders:     []string{"*"},
+	// 		ExposeHeaders:    []string{"Content-Length"},
+	// 		AllowCredentials: false,
+	// 		MaxAge:           12 * time.Hour,
+	// 	}))
+	// }
 
 	// 路由設定
-	routes.SetUpRoutes(router)
+	routes.Setup(router)
 
 	// 啟動服務
 	router.Run(":" + os.Getenv("APP_PORT"))
-}
-
-func setUpPublicRoutes(router *gin.Engine) {
-	router.Static("/api/uploads", "./uploads")
 }
 
 func setUpWebRoutes(router *gin.Engine) {
@@ -68,7 +63,6 @@ func setUpWebRoutes(router *gin.Engine) {
 		customerGroup.GET("/orders", middlewares.AuthRequire("customer"), handlers.ListOrdersByCustomer)
 		customerGroup.GET("/orders/:orderId", middlewares.AuthRequire("customer"), handlers.GetOrder)
 	}
-
 }
 
 func setUpAdminRoutes(router *gin.Engine) {

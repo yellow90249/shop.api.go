@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"mime/multipart"
 	"os"
 	"time"
 
@@ -27,14 +28,21 @@ func ConnectStorage() {
 	log.Println("Storage connected successfully")
 }
 
-func UploadFile(ctx context.Context, fileName string, file io.Reader) error {
+func UploadFile(ctx context.Context, file *multipart.FileHeader) error {
+	// 開啟檔案取得 io.Reader
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
 	// 設定逾時
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
 
 	// 建立 writer 並上傳
-	writer := storageClient.Bucket(bucketName).Object(fileName).NewWriter(ctx)
-	if _, err := io.Copy(writer, file); err != nil {
+	writer := storageClient.Bucket(bucketName).Object(file.Filename).NewWriter(ctx)
+	if _, err := io.Copy(writer, src); err != nil {
 		return err
 	}
 
@@ -42,7 +50,7 @@ func UploadFile(ctx context.Context, fileName string, file io.Reader) error {
 		return err
 	}
 
-	log.Printf("檔案已上傳到 bucket %v 的 %v\n", bucketName, fileName)
+	log.Printf("檔案已上傳到 bucket %v 的 %v\n", bucketName, file.Filename)
 
 	return nil
 }
