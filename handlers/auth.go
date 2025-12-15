@@ -58,7 +58,7 @@ func Signup(ctx *gin.Context) {
 		Name:      req.Name,
 		Email:     req.Email,
 		Password:  req.Password,
-		AvatarURL: dst,
+		Avatar: dst,
 	}
 
 	err = config.DB.Create(&user).Error

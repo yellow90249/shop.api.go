@@ -24,7 +24,7 @@ type User struct {
 	Email     string `gorm:"unique"`
 	Name      string
 	Password  string `json:"-"`
-	AvatarURL string
+	Avatar string
 	Role      string
 	Phone     string `gorm:"unique"`
 	Address   string
