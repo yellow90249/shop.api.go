@@ -121,6 +121,7 @@ func GetOrder(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, order)
 }
 
+// 只能查詢自己訂單
 func ListOrdersByCustomer(ctx *gin.Context) {
 	var orders []models.Order
 	var total int64
@@ -168,6 +169,7 @@ func ListOrdersByCustomer(ctx *gin.Context) {
 	})
 }
 
+// 能查詢所有人訂單
 func ListOrdersByAdmin(ctx *gin.Context) {
 	var orders []models.Order
 	var total int64

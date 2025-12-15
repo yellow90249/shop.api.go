@@ -27,56 +27,57 @@ type LoginRequest struct {
 	Password string `binding:"required"`
 }
 
-func Signup(ctx *gin.Context) {
-	req := SignupRequest{}
-	role := ctx.Param("role")
+func Signup(role string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		req := SignupRequest{}
 
-	validRoles := []string{"admin", "guest", "user"}
-	if !slices.Contains(validRoles, role) {
-		ctx.JSON(http.StatusBadRequest, "Role is not valid")
-		return
+		validRoles := []string{"admin", "guest", "user"}
+		if !slices.Contains(validRoles, role) {
+			ctx.JSON(http.StatusBadRequest, "Role is not valid")
+			return
+		}
+
+		err := ctx.ShouldBind(&req)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		file, err := ctx.FormFile("UploadedFile")
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+
+		// 儲存檔案
+		ext := filepath.Ext(file.Filename)
+		file.Filename = uuid.New().String() + ext
+		log.Println(file.Filename)
+
+		err = config.UploadFile(ctx, file)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		// DB 存紀錄
+		user := models.User{
+			Name:     req.Name,
+			Email:    req.Email,
+			Password: req.Password,
+			Phone:    req.Phone,
+			Role:     role,
+			Avatar:   file.Filename,
+		}
+
+		err = config.DB.Create(&user).Error
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err)
+			return
+		}
+
+		ctx.JSON(http.StatusOK, user)
 	}
-
-	err := ctx.ShouldBind(&req)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	file, err := ctx.FormFile("UploadedFile")
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	// 儲存檔案
-	ext := filepath.Ext(file.Filename)
-	file.Filename = uuid.New().String() + ext
-	log.Println(file.Filename)
-
-	err = config.UploadFile(ctx, file)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	// DB 存紀錄
-	user := models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password,
-		Phone:    req.Phone,
-		Role:     role,
-		Avatar:   file.Filename,
-	}
-
-	err = config.DB.Create(&user).Error
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, user)
 }
 
 func Login(userRoleList []string) gin.HandlerFunc {

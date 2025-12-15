@@ -65,6 +65,7 @@ func ListUsers(ctx *gin.Context) {
 	})
 }
 
+// 加新圖片、刪舊圖片
 func UpdateUserImage(ctx *gin.Context) {
 	// 找商品
 	userId := ctx.Param("userId")
