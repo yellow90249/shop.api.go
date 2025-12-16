@@ -14,7 +14,7 @@ func Setup(router *gin.Engine) {
 	api.POST("/admin/signup", handlers.Signup("admin"))
 	api.POST("/user/login", handlers.Login([]string{"user"}))
 	api.POST("/admin/login", handlers.Login([]string{"admin", "guest"}))
-	api.GET("/me", handlers.GetUser)
+	api.GET("/me", middlewares.AuthRequire("user"), handlers.GetUser)
 
 	// 用戶
 	api.GET("/users", middlewares.AuthRequire("admin"), handlers.ListUsers)

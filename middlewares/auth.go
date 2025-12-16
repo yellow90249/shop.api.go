@@ -63,7 +63,18 @@ func AuthRequire(userRole string) gin.HandlerFunc {
 			return
 		}
 
+		if claims["user_id"] == nil {
+			ctx.JSON(http.StatusUnauthorized, "user_id not exists")
+			ctx.Abort()
+			return
+		}
 		ctx.Set("user_id", claims["user_id"].(string))
+
+		if claims["user_role"] == nil {
+			ctx.JSON(http.StatusUnauthorized, "user_role not exists")
+			ctx.Abort()
+			return
+		}
 		ctx.Set("user_role", claims["user_role"].(string))
 
 		ctx.Next()
