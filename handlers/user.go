@@ -3,7 +3,6 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
@@ -80,30 +79,30 @@ func UpdateUserImage(ctx *gin.Context) {
 		return
 	}
 
-	// 存 FS
+	// Bucket 操作
 	file, err := ctx.FormFile("UploadedFile")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	ext := filepath.Ext(file.Filename)
-	filename := uuid.New().String() + ext
-	dst := filepath.Join("uploads", filename)
-	err = ctx.SaveUploadedFile(file, dst)
+	file.Filename = uuid.New().String() + ext
+	log.Println(file.Filename)
+
+	err = boot.UploadFile(ctx, file)
 	if err != nil {
-		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, "儲存失敗")
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	err = os.Remove(user.Avatar)
+	err = boot.DeleteFile(ctx, user.Avatar)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, "刪除失敗")
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// 存 DB
-	user.Avatar = dst
+	user.Avatar = file.Filename
 	boot.DB.Save(&user)
 
 	ctx.JSON(http.StatusOK, "使用者圖片更新成功")
