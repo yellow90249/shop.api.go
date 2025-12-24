@@ -91,7 +91,7 @@ func Login(userRoleList []string) gin.HandlerFunc {
 		req := LoginRequest{}
 		err := ctx.ShouldBindBodyWithJSON(&req)
 		if err != nil {
-			ctx.String(http.StatusOK, err.Error())
+			ctx.String(http.StatusBadRequest, err.Error())
 			return
 		}
 
