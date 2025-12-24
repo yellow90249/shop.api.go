@@ -1,5 +1,6 @@
 services:
   app:
+    image: verycoolgary/shop.api
     container_name: my_app
     build: .
     ports:
