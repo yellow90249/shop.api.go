@@ -42,6 +42,6 @@ jobs:
         run: |
           ssh -i ~/.ssh/deployer ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             cd ${{ env.DEPLOY_PATH }}
-            docker pull verycoolgary/test-machine:latest
-            docker compose up -d
+            sudo docker pull verycoolgary/test-machine:latest
+            sudo docker compose up -d
           EOF
