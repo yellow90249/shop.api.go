@@ -1,7 +1,7 @@
 services:
   app:
     image: verycoolgary/shop.api
-    container_name: api_container
+    container_name: shop-api
     build: .
     ports:
       - '8000:8000'
@@ -20,8 +20,8 @@ services:
     restart: unless-stopped
 
   postgres:
-    image: postgres:16
-    container_name: postgres_container
+    image: postgres:17.7
+    container_name: shop-db
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -33,6 +33,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  uploads_data:
   postgres_data:
-  redis_data:
