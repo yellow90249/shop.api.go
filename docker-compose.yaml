@@ -6,7 +6,6 @@ services:
     ports:
       - '8000:8000'
     environment:
-      - GO_ENV=${GO_ENV}
       - APP_PORT=${APP_PORT}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
