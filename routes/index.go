@@ -2,49 +2,54 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"shop.go/handlers"
-	"shop.go/middlewares"
+	"shop.go/enum"
+	"shop.go/handler"
+	"shop.go/middleware"
 )
 
 func Setup(router *gin.Engine) {
 	api := router.Group("/api")
 
-	// Auth
-	api.POST("/user/signup", handlers.Signup("user"))
-	api.POST("/admin/signup", handlers.Signup("admin"))
-	api.POST("/user/login", handlers.Login([]string{"user"}))
-	api.POST("/admin/login", handlers.Login([]string{"admin", "guest"}))
+	Auth := middleware.Auth
+	RoleAdmin := enum.RoleAdmin
+	RoleUser := enum.RoleUser
+
+	// 權限
+	api.POST("/user/signup", handler.Signup("user"))
+	api.POST("/admin/signup", handler.Signup("admin"))
+	api.POST("/user/login", handler.Login([]string{"user"}))
+	api.POST("/admin/login", handler.Login([]string{"admin", "guest"}))
 
 	// 用戶
-	api.GET("/me", middlewares.Auth([]string{"admin", "user"}), handlers.GetUser)
-	api.GET("/users", middlewares.Auth([]string{"admin"}), handlers.ListUsers)
-	api.PUT("/user/avatar", middlewares.Auth([]string{"admin", "user"}), handlers.UpdateUserImage)
-	api.PUT("/user/:userId/password", middlewares.Auth([]string{"admin"}), handlers.ResetUserPassword)
+	api.GET("/me", Auth(RoleAdmin, RoleUser), handler.GetUser)
+	api.GET("/users", Auth(RoleAdmin), handler.ListUsers)
+	api.PUT("/user/avatar", Auth(RoleAdmin, RoleUser), handler.UpdateUserImage)
+	api.PUT("/user/:userId/password", Auth(RoleAdmin), handler.ResetUserPassword)
 
 	// 種類
-	api.GET("/categories", middlewares.Auth([]string{"admin", "user"}), handlers.ListCategories)
-	api.POST("/category", middlewares.Auth([]string{"admin"}), handlers.AddCategory)
-	api.PUT("/category/:categoryId", middlewares.Auth([]string{"admin"}), handlers.UpdateCategory)
-	api.DELETE("/category/:categoryId", middlewares.Auth([]string{"admin"}), handlers.DeleteCategory)
+	api.GET("/categories", Auth(RoleAdmin, RoleUser), handler.ListCategories)
+	api.POST("/category", Auth(RoleAdmin), handler.AddCategory)
+	api.PUT("/category/:categoryId", Auth(RoleAdmin), handler.UpdateCategory)
+	api.DELETE("/category/:categoryId", Auth(RoleAdmin), handler.DeleteCategory)
 
 	// 商品
-	api.GET("/products", middlewares.Auth([]string{"admin", "user"}), handlers.ListProducts)
-	api.GET("/product/:productId", middlewares.Auth([]string{"admin", "user"}), handlers.GetProduct)
-	api.POST("/product", middlewares.Auth([]string{"admin"}), handlers.AddProduct)
-	api.PUT("/product/:productId", middlewares.Auth([]string{"admin"}), handlers.UpdateProduct)
-	api.PUT("/product/:productId/image", middlewares.Auth([]string{"admin"}), handlers.UpdateProductImage)
-	api.DELETE("/product/:productId", middlewares.Auth([]string{"admin"}), handlers.DeleteProduct)
+	api.GET("/products", Auth(RoleAdmin, RoleUser), handler.ListProducts)
+	api.GET("/product/:productId", Auth(RoleAdmin, RoleUser), handler.GetProduct)
+	api.POST("/product", Auth(RoleAdmin), handler.AddProduct)
+	api.PUT("/product/:productId", Auth(RoleAdmin), handler.UpdateProduct)
+	api.PUT("/product/:productId/image", Auth(RoleAdmin), handler.UpdateProductImage)
+	api.DELETE("/product/:productId", Auth(RoleAdmin), handler.DeleteProduct)
 
 	// 訂單
-	api.GET("/order/:orderId", handlers.GetOrder)
-	api.GET("/user/me/orders", middlewares.Auth([]string{"user"}), handlers.ListOrdersByCustomer)
-	api.GET("/orders", middlewares.Auth([]string{"admin"}), handlers.ListOrdersByAdmin)
-	api.POST("/order", middlewares.Auth([]string{"user"}), handlers.CreateOrder)
-	api.PUT("/order/:orderId", middlewares.Auth([]string{"admin"}), handlers.UpdateOrder)
+	api.GET("/order/:orderId", handler.GetOrder)
+	api.GET("/user/me/orders", Auth(RoleUser), handler.ListOrdersByCustomer)
+	api.GET("/orders", Auth(RoleAdmin), handler.ListOrdersByAdmin)
+	api.POST("/order", Auth(RoleUser), handler.CreateOrder)
+	api.PUT("/order/:orderId", Auth(RoleAdmin), handler.UpdateOrder)
 
 	// 購物車
-	api.POST("/cart/item", middlewares.Auth([]string{"user"}), handlers.AddCartItem)
-	api.PUT("/cart/item/:cartItemId", middlewares.Auth([]string{"user"}), handlers.UpdateCartItemQuantity)
-	api.DELETE("/cart/item/:cartItemId", middlewares.Auth([]string{"user"}), handlers.DeleteCartItem)
-	api.DELETE("/cart/item/all", middlewares.Auth([]string{"user"}), handlers.DeleteAllCartItem)
+	api.POST("/cart/item", Auth(RoleUser), handler.AddCartItem)
+	api.PUT("/cart/item/:cartItemId", Auth(RoleUser), handler.UpdateCartItemQuantity)
+	api.DELETE("/cart/item/:cartItemId", Auth(RoleUser), handler.DeleteCartItem)
+	api.DELETE("/cart/item/all", Auth(RoleUser), handler.DeleteAllCartItem)
 }

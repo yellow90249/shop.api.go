@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"shop.go/boot"
-	"shop.go/models"
+	"shop.go/model"
 )
 
 type ListUsersQuery struct {
@@ -19,7 +19,7 @@ type ListUsersQuery struct {
 }
 
 type ListUsersResponse struct {
-	List  []models.User
+	List  []model.User
 	Total int64
 }
 
@@ -28,7 +28,7 @@ type ResetUserPasswordRequest struct {
 }
 
 func ListUsers(ctx *gin.Context) {
-	var users []models.User
+	var users []model.User
 	var total int64
 	var query ListUsersQuery
 
@@ -39,7 +39,7 @@ func ListUsers(ctx *gin.Context) {
 	}
 
 	// 建立查詢
-	db := boot.DB.Model(&models.User{})
+	db := boot.DB.Model(&model.User{})
 
 	// 角色篩選
 	db = db.Where("role = ?", query.Role)
@@ -72,7 +72,7 @@ func ListUsers(ctx *gin.Context) {
 func UpdateUserImage(ctx *gin.Context) {
 	// 拿 User
 	userId := ctx.Param("userId")
-	user := models.User{}
+	user := model.User{}
 	err := boot.DB.First(&user, userId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -111,7 +111,7 @@ func UpdateUserImage(ctx *gin.Context) {
 func ResetUserPassword(ctx *gin.Context) {
 	// 拿 User
 	userId := ctx.Param("userId")
-	user := models.User{}
+	user := model.User{}
 	err := boot.DB.First(&user, userId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())

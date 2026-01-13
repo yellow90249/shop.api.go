@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"errors"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"shop.go/enum"
 	"shop.go/utils"
 )
 
@@ -29,7 +30,7 @@ func getTokenStringFromAuthorizationHeader(ctx *gin.Context) (string, error) {
 	return token, nil
 }
 
-func Auth(userRoleList []string) gin.HandlerFunc {
+func Auth(userRoleList ...enum.UserRole) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString, err := getTokenStringFromAuthorizationHeader(ctx)
 		if err != nil {
@@ -58,7 +59,8 @@ func Auth(userRoleList []string) gin.HandlerFunc {
 			return
 		}
 
-		if !slices.Contains(userRoleList, claims["user_role"].(string)) {
+		userRole := enum.UserRole(claims["user_role"].(string))
+		if !slices.Contains(userRoleList, userRole) {
 			ctx.JSON(http.StatusUnauthorized, "身份錯誤")
 			ctx.Abort()
 			return

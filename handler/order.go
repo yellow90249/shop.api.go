@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"net/http"
@@ -6,7 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"shop.go/boot"
-	"shop.go/models"
+	"shop.go/enum"
+	"shop.go/model"
 )
 
 type CreateOrderRequest struct {
@@ -25,7 +26,7 @@ type ListOrdersQuery struct {
 
 type ListOrdersResponse struct {
 	Message string
-	List    []models.Order
+	List    []model.Order
 	Total   int64
 }
 
@@ -56,7 +57,7 @@ func CreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	order := models.Order{
+	order := model.Order{
 		UserID:           uint(newVal),
 		RecipientName:    req.RecipientName,
 		RecipientPhone:   req.RecipientPhone,
@@ -64,7 +65,7 @@ func CreateOrder(ctx *gin.Context) {
 		RecipientAddress: req.RecipientAddress,
 		TotalAmount:      req.TotalAmount,
 		PaymentMethod:    req.PaymentMethod,
-		Status:           models.OrderStatusPending,
+		Status:           enum.OrderStatusPending,
 	}
 	err = tx.Create(&order).Error
 	if err != nil {
@@ -73,7 +74,7 @@ func CreateOrder(ctx *gin.Context) {
 	}
 
 	// 拿購物車
-	var cartItems []models.CartItem
+	var cartItems []model.CartItem
 	err = tx.Where("user_id = ?", userID).Find(&cartItems).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -81,9 +82,9 @@ func CreateOrder(ctx *gin.Context) {
 	}
 
 	// 用購物車建立訂單細項
-	var orderItems []models.OrderItem
+	var orderItems []model.OrderItem
 	for _, cartItem := range cartItems {
-		orderItem := models.OrderItem{
+		orderItem := model.OrderItem{
 			OrderID:   order.ID,
 			ProductID: cartItem.ProductID,
 			Quantity:  cartItem.Quantity,
@@ -98,7 +99,7 @@ func CreateOrder(ctx *gin.Context) {
 	}
 
 	// 清空購物車
-	err = tx.Where("user_id = ?", userID).Delete(&models.CartItem{}).Error
+	err = tx.Where("user_id = ?", userID).Delete(&model.CartItem{}).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -111,7 +112,7 @@ func CreateOrder(ctx *gin.Context) {
 
 func GetOrder(ctx *gin.Context) {
 	orderId := ctx.Param("orderId")
-	order := models.Order{}
+	order := model.Order{}
 	err := boot.DB.Preload("OrderItems.Product").First(&order, orderId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -123,7 +124,7 @@ func GetOrder(ctx *gin.Context) {
 
 // 只能查詢自己訂單
 func ListOrdersByCustomer(ctx *gin.Context) {
-	var orders []models.Order
+	var orders []model.Order
 	var total int64
 	var query ListOrdersQuery
 	userID, exists := ctx.Get("user_id")
@@ -139,7 +140,7 @@ func ListOrdersByCustomer(ctx *gin.Context) {
 	}
 
 	// 建立查詢
-	db := boot.DB.Model(&models.Order{}).Preload("OrderItems")
+	db := boot.DB.Model(&model.Order{}).Preload("OrderItems")
 
 	// 如果有分類，加入分類篩選
 	if userID != 0 {
@@ -171,7 +172,7 @@ func ListOrdersByCustomer(ctx *gin.Context) {
 
 // 能查詢所有人訂單
 func ListOrdersByAdmin(ctx *gin.Context) {
-	var orders []models.Order
+	var orders []model.Order
 	var total int64
 	var query ListOrdersQuery
 
@@ -182,7 +183,7 @@ func ListOrdersByAdmin(ctx *gin.Context) {
 	}
 
 	// 建立查詢
-	db := boot.DB.Model(&models.Order{}).Preload("OrderItems")
+	db := boot.DB.Model(&model.Order{}).Preload("OrderItems")
 
 	// 計算總數
 	db.Count(&total)
@@ -209,7 +210,7 @@ func ListOrdersByAdmin(ctx *gin.Context) {
 func UpdateOrder(ctx *gin.Context) {
 	// 找商品
 	orderId := ctx.Param("orderId")
-	order := models.Order{}
+	order := model.Order{}
 	err := boot.DB.First(&order, orderId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -223,7 +224,7 @@ func UpdateOrder(ctx *gin.Context) {
 		return
 	}
 
-	order.Status = models.OrderStatus(req.Status)
+	order.Status = enum.OrderStatus(req.Status)
 
 	boot.DB.Save(&order)
 

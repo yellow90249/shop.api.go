@@ -3,20 +3,20 @@ package boot
 import (
 	"log"
 
-	"shop.go/models"
+	"shop.go/model"
 )
 
 func Migrate() {
 	// 執行 migration
 	err := DB.AutoMigrate(
-		&models.User{},
-		&models.Category{},
-		&models.Product{},
-		&models.CartItem{},
-		&models.Order{},
-		&models.OrderItem{},
-		&models.Comment{},
-		&models.Banner{},
+		&model.User{},
+		&model.Category{},
+		&model.Product{},
+		&model.CartItem{},
+		&model.Order{},
+		&model.OrderItem{},
+		&model.Comment{},
+		&model.Banner{},
 	)
 
 	if err != nil {

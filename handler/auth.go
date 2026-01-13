@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"log"
@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"shop.go/boot"
-	"shop.go/models"
+	"shop.go/model"
 	"shop.go/utils"
 )
 
@@ -61,7 +61,7 @@ func Signup(role string) gin.HandlerFunc {
 		}
 
 		// DB 存紀錄
-		user := models.User{
+		user := model.User{
 			Name:     req.Name,
 			Email:    req.Email,
 			Password: req.Password,
@@ -96,7 +96,7 @@ func Login(userRoleList []string) gin.HandlerFunc {
 		}
 
 		// 查詢 user
-		user := models.User{Email: req.Email}
+		user := model.User{Email: req.Email}
 		err = boot.DB.Where("email = ?", user.Email).First(&user).Error
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, err.Error())
@@ -135,7 +135,7 @@ func GetUser(ctx *gin.Context) {
 		return
 	}
 
-	user := models.User{}
+	user := model.User{}
 	err := boot.DB.
 		Preload("CartItems", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at ASC")

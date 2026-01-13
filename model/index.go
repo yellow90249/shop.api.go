@@ -1,20 +1,10 @@
-package models
+package model
 
 import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-)
-
-// Enum
-type OrderStatus string
-
-const (
-	OrderStatusPending    OrderStatus = "pending"
-	OrderStatusProcessing OrderStatus = "processing"
-	OrderStatusShipped    OrderStatus = "shipped"
-	OrderStatusDelivered  OrderStatus = "delivered"
-	OrderStatusCanceled   OrderStatus = "canceled"
+	"shop.go/enum"
 )
 
 // Table
@@ -81,7 +71,7 @@ type Order struct {
 	RecipientAddress string
 	TotalAmount      float64
 	PaymentMethod    string
-	Status           OrderStatus
+	Status           enum.OrderStatus
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 

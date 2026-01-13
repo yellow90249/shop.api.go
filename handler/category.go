@@ -1,11 +1,11 @@
-package handlers
+package handler
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"shop.go/boot"
-	"shop.go/models"
+	"shop.go/model"
 )
 
 type AddCategoryRequest struct {
@@ -14,7 +14,7 @@ type AddCategoryRequest struct {
 }
 
 type ListCategoryResponse struct {
-	List  []models.Category
+	List  []model.Category
 	Total int64
 }
 
@@ -36,7 +36,7 @@ func AddCategory(ctx *gin.Context) {
 		return
 	}
 
-	category := models.Category{
+	category := model.Category{
 		Name:        req.Name,
 		Description: req.Description,
 	}
@@ -50,7 +50,7 @@ func AddCategory(ctx *gin.Context) {
 }
 
 func ListCategories(ctx *gin.Context) {
-	var categories []models.Category
+	var categories []model.Category
 	var total int64
 	var query ListCategoryQuery
 
@@ -61,7 +61,7 @@ func ListCategories(ctx *gin.Context) {
 	}
 
 	// 建立查詢
-	db := boot.DB.Model(&models.Category{})
+	db := boot.DB.Model(&model.Category{})
 
 	// 如果有搜尋名稱，加入模糊搜尋
 	if query.Name != "" {
@@ -98,7 +98,7 @@ func UpdateCategory(ctx *gin.Context) {
 	}
 
 	// 更新
-	category := models.Category{}
+	category := model.Category{}
 	err = boot.DB.First(&category, categoryId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -114,7 +114,7 @@ func UpdateCategory(ctx *gin.Context) {
 func DeleteCategory(ctx *gin.Context) {
 	categoryId := ctx.Param("categoryId")
 
-	err := boot.DB.Unscoped().Delete(&models.Category{}, categoryId).Error
+	err := boot.DB.Unscoped().Delete(&model.Category{}, categoryId).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return

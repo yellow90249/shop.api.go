@@ -1,11 +1,11 @@
-package handlers
+package handler
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"shop.go/boot"
-	"shop.go/models"
+	"shop.go/model"
 )
 
 type AddCartItemRequest struct {
@@ -25,7 +25,7 @@ func AddCartItem(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, "userID not exist")
 		return
 	}
-	user := models.User{}
+	user := model.User{}
 	err := boot.DB.First(&user, userID).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -41,7 +41,7 @@ func AddCartItem(ctx *gin.Context) {
 	}
 
 	// 存記錄到 CartItem table
-	cartItem := models.CartItem{
+	cartItem := model.CartItem{
 		UserID:    user.ID,
 		ProductID: req.ProductID,
 		Quantity:  req.Quantity,
@@ -66,7 +66,7 @@ func UpdateCartItemQuantity(ctx *gin.Context) {
 	}
 
 	// 更新
-	cart := models.CartItem{}
+	cart := model.CartItem{}
 	err = boot.DB.First(&cart, cartId).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -81,7 +81,7 @@ func UpdateCartItemQuantity(ctx *gin.Context) {
 func DeleteCartItem(ctx *gin.Context) {
 	cartItemId := ctx.Param("cartItemId")
 
-	err := boot.DB.Unscoped().Delete(&models.CartItem{}, cartItemId).Error
+	err := boot.DB.Unscoped().Delete(&model.CartItem{}, cartItemId).Error
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -96,7 +96,7 @@ func DeleteAllCartItem(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, "userID not exist")
 		return
 	}
-	err := boot.DB.Where("user_id = ?", userID).Delete(&models.CartItem{}).Error
+	err := boot.DB.Where("user_id = ?", userID).Delete(&model.CartItem{}).Error
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return

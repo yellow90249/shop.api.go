@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"shop.go/boot"
-	"shop.go/middlewares"
+	"shop.go/middleware"
 	"shop.go/routes"
 )
 
@@ -14,12 +14,13 @@ func main() {
 	boot.LoadEnvFile()
 	boot.ConnectDB()
 	boot.ConnectStorage()
+	// boot.Migrate()
 
 	// 創建 Gin 路由器
 	router := gin.Default()
 
 	// CORS 設定
-	router.Use(middlewares.CORS())
+	router.Use(middleware.CORS())
 
 	// 路由設定
 	routes.Setup(router)
