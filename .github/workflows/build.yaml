@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DEPLOY_PATH: /home/deployer/app/api
+      DEPLOY_PATH: /home/cicd-robot/deploy/api
 
     steps:
       - name: Checkout
@@ -30,17 +30,17 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deployer
-          chmod 600 ~/.ssh/deployer
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/cicd-robot
+          chmod 600 ~/.ssh/cicd-robot
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Copy docker-compose.yaml to VM
         run: |
-          scp -i ~/.ssh/deployer docker-compose.yaml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
+          scp -i ~/.ssh/cicd-robot docker-compose.yaml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
 
       - name: Deploy to VM
         run: |
-          ssh -i ~/.ssh/deployer ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+          ssh -i ~/.ssh/cicd-robot ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             cd ${{ env.DEPLOY_PATH }}
             sudo docker pull verycoolgary/shop.api:latest
             sudo docker compose up -d
