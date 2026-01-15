@@ -34,14 +34,14 @@ jobs:
           chmod 600 ~/.ssh/cicd-robot
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Copy docker-compose.prod.yaml to VM
+      - name: Copy docker-compose.yaml to VM
         run: |
-          scp -i ~/.ssh/cicd-robot docker-compose.prod.yaml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
+          scp -i ~/.ssh/cicd-robot docker-compose.yaml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_PATH }}/
 
       - name: Pull And Up Image
         run: |
           ssh -i ~/.ssh/cicd-robot ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             cd ${{ env.DEPLOY_PATH }}
             sudo docker pull verycoolgary/shop.api:latest
-            sudo docker compose -f docker-compose.prod.yaml up -d
+            sudo docker compose up -d
           EOF
