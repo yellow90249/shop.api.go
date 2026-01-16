@@ -27,13 +27,13 @@ func Setup(router *gin.Engine) {
 	api.PUT("/user/:userId/password", Auth(RoleAdmin), handler.ResetUserPassword)
 
 	// 種類
-	api.GET("/categories", Auth(RoleAdmin, RoleUser), handler.ListCategories)
+	api.GET("/categories", handler.ListCategories)
 	api.POST("/category", Auth(RoleAdmin), handler.AddCategory)
 	api.PUT("/category/:categoryId", Auth(RoleAdmin), handler.UpdateCategory)
 	api.DELETE("/category/:categoryId", Auth(RoleAdmin), handler.DeleteCategory)
 
 	// 商品
-	api.GET("/products", Auth(RoleAdmin, RoleUser), handler.ListProducts)
+	api.GET("/products", handler.ListProducts)
 	api.GET("/product/:productId", Auth(RoleAdmin, RoleUser), handler.GetProduct)
 	api.POST("/product", Auth(RoleAdmin), handler.AddProduct)
 	api.PUT("/product/:productId", Auth(RoleAdmin), handler.UpdateProduct)

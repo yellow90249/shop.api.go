@@ -49,13 +49,13 @@ func AddProduct(ctx *gin.Context) {
 
 	// 儲存檔案
 	ext := filepath.Ext(file.Filename)
-	filename := uuid.New().String() + ext
-	dst := filepath.Join("uploads", filename)
+	file.Filename = uuid.New().String() + ext
+	log.Println(file.Filename)
 
-	err = ctx.SaveUploadedFile(file, dst)
+	err = boot.UploadFile(ctx, file)
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, "儲存失敗")
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -66,7 +66,7 @@ func AddProduct(ctx *gin.Context) {
 		Description:   req.Description,
 		Price:         req.Price,
 		StockQuantity: req.StockQuantity,
-		ImageURL:      dst,
+		ImageURL:      file.Filename,
 	}
 
 	err = boot.DB.Create(&product).Error
